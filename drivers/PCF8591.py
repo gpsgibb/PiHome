@@ -4,7 +4,7 @@ import numpy as np
 import smbus
 import time
 
-# Class to control the PCF8581 analogue to digital converter
+# Class to control the PCF8591 analogue to digital converter
 # Connects to the pi via i2c
 
 #command structure:
