@@ -86,7 +86,7 @@ class DHT:
 		self.Hum=None
 		self.Temp=None
 		
-		time.sleep(0.05)
+		time.sleep(0.1)
 		
 	
 	#Read (attempt to at least) from DHT and return result dictionary
@@ -100,9 +100,9 @@ class DHT:
 			if status == SUCCESS:
 				break
 			else:
-				print("Trying again in 2 seconds...")
+				print("Trying again in 3 seconds...")
 				tries+=1
-				time.sleep(2)
+				time.sleep(3)
 				
 		dict={}
 		dict["status"]=status
@@ -215,13 +215,11 @@ class DHT:
 
 #example/test code	
 if __name__ == "__main__":
-	import matplotlib.pyplot as plt
-	try:		
-		GPIO.setmode(GPIO.BCM)
+	try:
+                GPIO.setmode(GPIO.BCM)
 	
 		dht=DHT(pin=21,sensortype=22)
 		
-
 		result = dht.read()
 		if result["status"] == SUCCESS:
 			temp=result["Temperature"]
