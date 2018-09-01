@@ -228,7 +228,15 @@ static PyObject* DHTC_read(PyObject *self, PyObject *args){
   
   //parse the arguments
   if (PyArg_ParseTuple(args,"ii",&pin,&class)){
-    //printf("Hello from C! You chose pin %d and class: %d\n",pin,class);
+    //check that the values in are sensible:
+    if (pin < 0 || pin > 27) {
+        printf("Error: The selected pin number %d is invalid\n",pin);
+        return NULL;
+    }
+    if (class != 22 && class != 11){
+        printf("Error: Invalid DHT class %d. Should be 11 or 22.\n",class);
+        return NULL;
+    }
   } else {
     printf("Error: C unable to parse python input\n");
     return NULL;
