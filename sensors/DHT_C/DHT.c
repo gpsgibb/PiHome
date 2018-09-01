@@ -1,25 +1,26 @@
+#include <Python.h>
 #include <wiringPi.h>
 #include <stdio.h>
 #include <sys/time.h>
 #include <math.h>
 
-//reads a DHT sensor, trying to avoid reading it during an OS interrupt
-//so as to descreae the likelihood of an incorrect/incomplete reading.
 
-int pin=20;
+//reads a DHT sensor, trying to avoid reading it during an OS interrupt
+//so as to decrease the likelihood of an incorrect/incomplete reading.
+
 
 //maximum number of bits we can read
 int nbits=50;
 
-// returns time in seconds after initial call
-double time(void){
+// returns time in seconds after initial call or reset time
+double timer(int reset){
     static long secs = 0, usecs=0;
     struct timeval time;
     
     gettimeofday(&time,NULL);
     
-    //if this is the first call, store the time
-    if (secs == 0) {
+    //if this is the first call (or we request a reset), store the time
+    if (secs == 0 || reset == 1) {
         secs = time.tv_sec;
         usecs= time.tv_usec;
     }
@@ -29,7 +30,7 @@ double time(void){
 }
 
 
-int main (void)
+int readDHT(int pin, int class, double *temp, double *hum)
 {
   //set up GPIO using broadcomm GPIO numbers
   wiringPiSetupGpio() ;
@@ -48,13 +49,13 @@ int main (void)
   double data[nbits];
   
   
-  t1=time();
-  t2=time();
+  t1=timer(1);
+  t2=timer(0);
   
   //pause but keep CPU under high load to stop scheduling 
   //This tricks the OS to giving us priority as it thinks we're busy
   while(t2-t1 < 0.02){
-      t2=time();
+      t2=timer(0);
   }
   
   
@@ -74,14 +75,14 @@ int main (void)
   double highdt[20];
   
   double tlast;
-  t1=time();
-  t2=time();
-  tlast=time();
+  t1=timer(0);
+  t2=timer(0);
+  tlast=timer(0);
   
   //during the sleep, we identify any times where the time between
   // each iteration is > 20us
   while(t2-t1 < 0.020){
-      t2=time();
+      t2=timer(0);
       if (t2-tlast > 0.000020){
           if (counter<20) highdt[counter] = t2;
           counter++;
@@ -118,9 +119,9 @@ int main (void)
   }
   
   // wait until we think an interrupt has just happened
-  t2=time();
+  t2=timer(0);
   while (t2 < target_time){
-      t2=time();
+      t2=timer(0);
   }
   
   //now we go!
@@ -130,13 +131,13 @@ int main (void)
   int old=0;
   int new;
   int count=0;
-  t1=time();
-  t2=time();
+  t1=timer(0);
+  t2=timer(0);
   //poll the pin for 8ms
   // if the pin has gone low, record the time this happened as the times
   // between these lows correspond to the bits being sent
   while ((t2-t1)<0.008){
-      t2=time();
+      t2=timer(0);
       new=digitalRead(pin);
       if (new-old == -1){
           if (count >= nbits) break;
@@ -147,6 +148,10 @@ int main (void)
   }
   
   pinMode(pin,OUTPUT);
+  digitalWrite(pin,1);
+  
+  //set the priority back to normal
+  piHiPri(0);
 
 
   //see if we have recorded the right number of times (41 or 42)
@@ -183,17 +188,20 @@ int main (void)
       if (((bytes[0]+bytes[1]+bytes[2]+bytes[3])&bytes[4]) != bytes[4]){
           printf("Checksum failed \n");
           printf("details: sum= %d, reference= %d\n",(bytes[0]+bytes[1]+bytes[2]+bytes[3])&bytes[4], bytes[4]);
-          return 1;
+          return 2;
       }
       
-      double hum,temp;
-    
-      hum = (double)((bytes[0]<<8) + bytes[1]);
-      hum = hum/10.;
-      
-      temp = (double)((bytes[2]<<8) + bytes[3]);
-      temp = temp/10.;
-      printf("Temp = %3.1f 'C, hum= %3.1f \%\n",temp,hum);
+      if (class == 22) {
+          *hum = (double)((bytes[0]<<8) + bytes[1]);
+          *hum = *hum/10.;
+          
+          *temp = (double)((bytes[2]<<8) + bytes[3]);
+          *temp = *temp/10.;
+      } else {
+          *hum = (double)bytes[0];
+          *temp = (double)bytes[2];
+      }
+      printf("Temp = %3.1f 'C, hum= %3.1f %%\n",*temp,*hum);
       
       
       
@@ -208,4 +216,69 @@ int main (void)
    
 
   return 0 ;
+}
+
+// function called if we're calling from python
+static PyObject* DHTC_read(PyObject *self, PyObject *args){
+
+  int pin, class;
+ 
+  double temp,hum;
+  
+  
+  //parse the arguments
+  if (PyArg_ParseTuple(args,"ii",&pin,&class)){
+    //printf("Hello from C! You chose pin %d and class: %d\n",pin,class);
+  } else {
+    printf("Error: C unable to parse python input\n");
+    return NULL;
+  }
+
+  int result;
+  
+  result=readDHT(pin,class,&temp,&hum);
+  
+  if (result == 0){
+      return Py_BuildValue("{s:i,s:d,s:d}","status",result,"Temperature",temp,"Humidity",hum);
+  } else {
+      return Py_BuildValue("{s:i,s:O,s:O}","status",result,"Temperature",Py_None,"Humidity",Py_None);
+  }
+
+  
+  
+}
+
+static PyMethodDef DHTC_funcs[] = {
+  {"read", (PyCFunction)DHTC_read, METH_VARARGS, NULL},
+  {NULL, NULL, 0, NULL}
+};
+
+PyMODINIT_FUNC initDHTC(void) {
+  Py_InitModule("DHTC", DHTC_funcs);
+  Py_InitModule3("DHTC", DHTC_funcs,"C library that reads a DHT sensor");
+}
+
+
+int main(int argc, char **argv){
+    if (argc != 3){
+        printf("Usage: ./DHT [GPIO pin number] [class (11 or 22)]\n");
+        return 10;
+    }
+    
+    int pin,class, result;
+    double temp, hum;
+    
+    // parse pin argument
+    pin=atoi(argv[1]);
+    
+    class=atoi(argv[2]);
+    if (class != 11 && class != 22) {
+        printf("Error: Invalid DHT class\nMust be 11 or 22\n");
+        return 10;
+    }
+    
+    printf("Reading from GPIO pin %2d\n",pin);
+    result = readDHT(pin,class,&temp,&hum);
+
+    return result;
 }

@@ -1,0 +1,27 @@
+A C code for reading a DHT 11/22 sensor. It can also be used as a python 
+module.
+
+BUILD INSTRUCTIONS:
+
+- To compile the code for use as a standalone executable, type "sudo make C"
+
+- To compile the code for use as a python module, type "sudo make python" 
+
+- To compile for both uses, type "sudo make all"
+
+USAGE:
+
+- Standalone executable:
+  Run ./DHT [GPIO Pin number] [Sensor class (22 or 11)]
+
+- Python module:
+  From within Python, do:
+  >>> import DHTC
+  >>> result = DHTC.read(PinNum,class)
+  >>> if (result["status"] == 0:
+  ...    print result["Temperature"]
+  ...    print result["Humidity"]
+      else:
+         print "There was some read error"
+  
+
