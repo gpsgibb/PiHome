@@ -197,6 +197,8 @@ int readDHT(int pin, int class, double *temp, double *hum)
           
           *temp = (double)((bytes[2]<<8) + bytes[3]);
           *temp = *temp/10.;
+          // see if the temperature is negative
+          if ((bytes[2]&128) != 0) *temp = -1. * *temp;
       } else {
           *hum = (double)bytes[0];
           *temp = (double)bytes[2];
