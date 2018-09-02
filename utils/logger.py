@@ -240,7 +240,9 @@ class Logger:
             plt.ylabel(name)
             ax.xaxis.set_major_formatter(fmt)
             plt.savefig(self.dir+"/"+name+"_"+title+".png")
-            plt.clf()
+            plt.close()
+            fig.clf()
+            ax.cla()
         
     
     def finalise(self):
