@@ -26,7 +26,7 @@ class Logger:
             
         #check that main log directory exists. If not, make it
         if not os.path.isdir(logdir):
-            print("Logger: Making root log directory: '%s'")
+            print("Logger: Making root log directory: '%s'"%logdir)
             os.mkdir(logdir)
             
         self.dir = logdir+"/"+self.name
@@ -192,7 +192,7 @@ class Logger:
         self.prune_old_values()
         
         
-        self.plot("Latest")
+        if (len(self.historical["seconds"]) > 0): self.plot("Latest")
         
         
         
@@ -200,6 +200,7 @@ class Logger:
         #seconds in a day
         day = 3600*24
         
+        if (len(self.historical["seconds"]) == 0): return
         #prune off the values older than a day
         while True:
             if self.historical["seconds"][0] < -day:
