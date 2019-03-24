@@ -1,0 +1,23 @@
+{% extends "main.html" %}
+
+{% block PageTitle %}
+Status
+{% endblock %}
+
+{% block Title %}
+System Status
+{% endblock %}
+
+{% block statusblock %}
+class="active"
+{% endblock %}
+
+{% block body %}
+<div>
+{% for key, value in data.iteritems() %}
+<h2> {{key}} </h2>
+<pre> {{value}} </pre>
+
+{% endfor %}
+</div>
+{%endblock%}

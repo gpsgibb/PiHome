@@ -1,0 +1,20 @@
+{% extends "main.html"%}
+
+{% block PageTitle%}
+Welcome Page
+{% endblock %}
+
+{% block Title %}
+  Welcome!
+{%endblock%}
+
+{% block homeblock %}
+class="active"
+{% endblock %}
+
+
+
+{% block body %}
+<h1> {{hostname}} </h1>
+<img style="height: 70%; display: block; margin-left: auto; margin-right: auto;" src="/static/rpi.png" />
+{%endblock%}
