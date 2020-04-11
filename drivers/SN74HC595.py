@@ -1,5 +1,6 @@
 from __future__ import print_function
 import RPi.GPIO as GPIO
+import time
 
 #Class for the SN74HC595 shift register
 
@@ -11,15 +12,16 @@ import RPi.GPIO as GPIO
 #  QE 4 |     | 13 OE
 #  QF 5 |     | 12 RCLK
 #  QG 6 |     | 11 SRCLK
-#  QH 7 |     | 10 SRCLK
+#  QH 7 |     | 10 SRCLR
 # GND 8 |_____|  9 QH'
 #     
 # QA-H  - output
 # Vcc   - 3V3 input
-# SER   - Serial input
+# SER   - Serial input (this is the value that will be placed in the register)
 # OE    - Enable output (Low = enabled)
-# RCLK  - Latch. Pull up to update output
-# SRCLK - Clock. When pulled up register will be shifted
+# RCLK  - Latch. Pull up to update output to what is stored on the registers
+# SRCLK - Clock. When pulled up register will be shifted and the value of SER
+#         will be placed into the register
 # SRCLR - Clear register (low = clear)
 # QH'   - Serial output (allows chips to be daisychained together)
 # GND   - Ground
@@ -52,28 +54,32 @@ class SN74HC595:
         
         
     
-    # Update the output to what it stored in the register
+    # Update the output to what is stored in the register
     def update_output(self):
         if self.finalised:
             print("SN74HC595: Error, this instance is finalised. Doing nothing")
             return
         GPIO.output(self.latch,GPIO.LOW)
-        time.sleep(0.001)
+        time.sleep(0.0001)
         GPIO.output(self.latch,GPIO.HIGH)
         
-    # Set the values of the outputs
+    # Set the values of the outputs (does not update what is being displayed,
+    # ...to do this use update_output)
     def set_output(self,values):
         if self.finalised:
             print("SN74HC595: Error, this instance is finalised. Doing nothing")
             return
         if self.invert: values=~values
-        GPIO.output(self.latch,GPIO.LOW)
         for i in range(8*self.chain):
+            #ensure clock is pulled down
             GPIO.output(self.clock,GPIO.LOW)
+            #set the new value
             GPIO.output(self.data,values&1)
-            values >>=1
+            #lift the clock up to update the value and shift the register on by 1
             GPIO.output(self.clock,GPIO.HIGH)
-        GPIO.output(self.latch,GPIO.HIGH)
+            
+            #shift 'values' by 1 byte
+            values >>=1
         GPIO.output(self.clock,GPIO.LOW)
         
     # Clear the outputs and free the GPIO pins
