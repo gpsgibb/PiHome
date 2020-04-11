@@ -1,0 +1,43 @@
+<html>
+    <head>
+
+        <title>{% block PageTitle %} {% endblock %}</title>
+
+        <link rel="stylesheet" href="/static/style.css">
+    </head>
+
+    <body>
+
+        <div class="navigator_container">
+
+            <ul class="navigator_list">
+
+                <li> <a {%block homeblock%} class="navigator_link" {%endblock%} href="/"> Home </a> </li>
+
+                <li><a {%block statusblock%} class="navigator_link"{%endblock%} href="/status"> Status </a> </li>
+
+                <li><a {%block fileblock%}class="navigator_link" {%endblock%} href="/files"> File Browser </a> </li>
+
+                <li> <a {%block datablock%} class="navigator_link"{%endblock%} href="/data"> Data </a> </li>
+
+                <li class="Hostname"> {{hostname}}  </li>
+
+            </ul>
+
+        </div>
+
+        <div class="body">
+
+            <div class="TitleBar">
+
+                <!-- <h1>{% block Title%} {% endblock %}</h1> -->
+
+            </div>
+
+            {% block body %}
+
+            {% endblock %}
+        </div>
+
+    </body>
+</html>

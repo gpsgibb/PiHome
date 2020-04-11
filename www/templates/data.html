@@ -1,0 +1,106 @@
+{% extends "main.html" %}
+
+{% block PageTitle %}
+ Latest Data
+{% endblock %}
+
+{% block datablock %}
+class="active"
+{% endblock %}
+
+{% block Title %}
+Browse data
+{% endblock %}
+
+{% block body %}
+
+<div>
+<ul class="table">
+  <!-- <li class="table_header"> Available months </li> -->
+  <li> <a href="/data" {% if request.path == "/data/" %} class="active" {%else%} class="navigator_link" {%endif%}> Latest Data </a> </li>
+  {%for item in months%}
+  <li>
+    <a href='{{item.url}}'  {% if item.url in request.path%} class="active" {%else%} class="navigator_link" {%endif%}> {{item.text}} </a>
+  </li>
+  {%endfor%}
+</ul>
+</div>
+
+<div class="DataTitle" >
+  <a href="/data/{{PrevNext[0]}}"> <img src="/static/back.png"> </a>
+  <h1 style=""> {{DataTitle}} </h1>
+  {% if PrevNext[1] != None %}
+  <a href="/data/{{PrevNext[1]}}"> <img src="/static/next.png"> </a>
+  {% else %}
+  <img style="opacity: 0.2;" src="/static/next.png">
+  {%endif%}
+</div>
+
+{%if data is defined %}
+<div class="data">
+<p style="font-style: italic;"> {{data.age}} </p>
+
+
+<h2> Temperature </h2>
+
+<p> {{data.Temp}}  </p>
+<p> {{data.MeanTemp}}  </p>
+<p> {{data.MaxTemp}}  </p>
+<p> {{data.MinTemp}}  </p>
+<p> <img src='{{data.TempImg}}'> </p>
+
+
+<h2> Humidity </h2>
+
+<p> {{data.Hum}}  </p>
+<p> {{data.MeanHum}}  </p>
+<p> {{data.MaxHum}}  </p>
+<p> {{data.MinHum}}  </p>
+<p> <img src='{{data.HumImg}}'> </p>
+
+<h2> Attempts </h2>
+<p> <img src='{{data.AttemptImg}}'> </p>
+
+</div>
+
+
+{%endif%}
+
+{%if calendar is defined %}
+<div class="data">
+<table>
+  <tr>
+    <td class="day_header"> Mon </td>
+    <td class="day_header"> Tue </td>
+    <td class="day_header"> Wed </td>
+    <td class="day_header"> Thu </td>
+    <td class="day_header"> Fri </td>
+    <td class="day_header"> Sat </td>
+    <td class="day_header"> Sun </td>
+  </tr>
+{% for week in calendar %}
+  <tr>
+    {%for day in week %}
+      {% if day.active == 1 %}
+       <td class="td_active"> <a href="{{day.url}}">{{day.text}}  </a></td>
+      {% else %}
+      <td class="td_inactive"> {{day.text}} </td>
+      {% endif %}
+    {%endfor%}
+  </tr>
+{%endfor%}
+</table>
+</div>
+
+
+{%endif%}
+
+{% if (data is not defined) and (calendar is not defined) %}
+<div class="data">
+  <h1 style="text-align: center;"> No data available </h1>
+</div>
+{%endif%}
+
+
+
+{%endblock%}

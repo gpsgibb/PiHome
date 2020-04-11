@@ -1,0 +1,49 @@
+{% extends "main.html" %}
+{% block Title %}
+  File Browser
+{% endblock %}
+
+{% block PageTitle %}
+File Browser
+{% endblock %}
+
+{% block fileblock %}
+class="active"
+{% endblock %}
+
+
+{% block body %}
+<div>
+
+  <h2>
+    <a href="/files" class="dirlink"> Home </a>
+    {% for parent in parents %}
+     <img src="/static/next.png" style="height: 1pc;"/>
+     <a href="{{parent["url"]}}" class="dirlink"> {{parent["name"]}} </a>
+    {% endfor %}
+  </h2>
+
+
+  {% for item in content %}
+  <a href="{{item["url"]}}" class="FileLink">
+
+    {% if loop.index%2 == 1 %}
+       <p class="fgrey" >
+    {% else %}
+       <p class="fwhite" >
+    {%endif%}
+
+    {% if item["type"] == "file" %}
+        <img src='/static/file.png'>
+        {{item["name"]}}
+    {%else%}
+        <img src='/static/folder.png'>
+        {{item["name"]}} {{i}}
+    {%endif%}
+
+    </p>
+  </a>
+  {% endfor %}
+</div>
+
+{% endblock %}

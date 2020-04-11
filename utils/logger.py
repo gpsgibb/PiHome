@@ -5,6 +5,8 @@ import os
 import sys
 import datetime
 import time
+import matplotlib as mpl
+mpl.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.dates as dates
 
