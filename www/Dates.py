@@ -15,6 +15,37 @@ switcher = {
     "12": " December"
 }
 
+#From a timedelta returns a string with an approximate time
+# E.g. 4 days 3 hours... = 4 days
+#      5 mins 3 seconds = 5 minutes
+def FuzzyTimeFromTimedelta(td):
+    tds = td.total_seconds()
+
+    days = int(tds/3600/24)
+    if days == 1:
+        return "%d day"%days
+    elif days > 1:
+        return "%d days"%days
+    else:
+        hours = int(tds%(3600*24)/3600)
+        if hours ==1:
+            return "%d hour"%hours
+        elif hours > 1:
+            return "%d hours"%hours
+        else:
+            mins = int((tds%3600)/60)
+            if mins == 1:
+                return "%d minute"%mins
+            elif mins > 1:
+                return "%d minutes"%mins
+            else:
+                secs = int(tds%60)
+                if secs == 1:
+                    return "%d second"%secs
+                else:
+                    return "%d seconds"%secs
+
+
 
 #From a month number, returns a string of that month's name
 def GetMonthString(year,month):
@@ -22,6 +53,16 @@ def GetMonthString(year,month):
     mstr = switcher[str]
 
     return "%s %04d"%(mstr,year)
+
+#returns the previous and next years
+def PrevNextYear(year):
+    ly = "%04d"%(year-1)
+    ny = "%04d"%(year+1)
+
+    if year == datetime.date.today().year:
+        return [ly,None]
+
+    return [ly,ny]
 
 #Return the previous and next months
 def PrevNextMonth(year, month):
@@ -49,7 +90,6 @@ def PrevNextMonth(year, month):
 
     if month == int(m) and year == int(y):
         ns = None
-    # print("Previous month =", ps, " next month= ",ns)
     return [ps, ns]
 
 #Return the previous and next days
