@@ -1,10 +1,11 @@
+# -*- coding: UTF-8 -*-
 #!/usr/bin/env python
 from __future__ import print_function
 import numpy as np
 import time
 import json
 import datetime
-
+import traceback
 
 from utils import logger, GetConfig
 import drivers
@@ -206,7 +207,7 @@ if __name__ == "__main__":
         
         #register temperature and humidity with the database
         logger.register_variable(name="Temperature",
-                            unit="°C",
+                            unit= u"°C",
                             description="Bedroom Temperature",
                             min=15.0,
                             max=30.0)
@@ -255,6 +256,7 @@ if __name__ == "__main__":
 
     except Exception as e:
         print(e)
+        traceback.print_exc()
         raise e
            
            
@@ -262,7 +264,6 @@ if __name__ == "__main__":
     
         matrix.finalise()
         DHT.finalise()
-        logger.finalise()
 
 
 

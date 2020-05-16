@@ -30,8 +30,8 @@ class SN74HC595:
     def __init__(self,data,latch,clock,chain=1,invert=False):
         # If no GPIO modes have been set up, we use BCM
         if GPIO.getmode() != GPIO.BCM:
-			print("SN74HC595: Warning: GPIO mode will be set to BCM")
-			GPIO.setmode(GPIO.BCM)
+                        print("SN74HC595: Warning: GPIO mode will be set to BCM")
+                        GPIO.setmode(GPIO.BCM)
         # number of chips we have chained together
         self.chain=chain
         

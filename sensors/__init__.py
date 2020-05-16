@@ -1,3 +1,3 @@
-from DHTsensor import DHT
-from Thermistor import Thermistor
+from .DHTsensor import DHT
+from .Thermistor import Thermistor
 
