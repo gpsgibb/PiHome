@@ -1,0 +1,26 @@
+##############################################################################
+#                    PLACE THIS IN /etc/systemd/service                      #
+##############################################################################
+
+[Unit]
+Description=ClockPi daemon
+#After=network.target
+
+[Service]
+Type=simple
+# the specific user that our service will run as
+User=pi
+Group=pi
+# another option for an even more restricted service is
+# DynamicUser=yes
+# see http://0pointer.net/blog/dynamic-users-with-systemd.html
+RuntimeDirectory=clockpi
+WorkingDirectory=/home/pi/PiHome
+ExecStart=/usr/bin/python clock.py
+ExecReload=/bin/kill -s HUP $MAINPID
+KillMode=mixed
+TimeoutStopSec=5
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

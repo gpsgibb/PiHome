@@ -1,0 +1,23 @@
+##############################################################################
+#                   PLACE THIS IN /etc/nginx/sites-enabled                   #
+##############################################################################
+
+# Default server configuration
+#
+server {
+	listen 80 default_server;
+	listen [::]:80 default_server;
+
+
+	root /var/www/html;
+
+
+	server_name _;
+
+	location / {
+                proxy_pass http://0.0.0.0:8000;
+	}
+
+}
+
+
