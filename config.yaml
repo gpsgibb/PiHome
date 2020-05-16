@@ -1,0 +1,13 @@
+##Global configuration settings. These can be read with utils.GetConfig
+
+#Configuration for the logger (utils/logs.py)
+logger:
+  dbname: 'logs.sqlite'
+  dbdir: '/home/pi/logs'
+  plotdir: '/home/pi/logs/plots'
+
+#configuration for the clock (clock.py)
+clock:
+  refresh_rate: 10 #seconds -  How often will the time on the display be refreshed
+  data_cadence: 300 #seconds - How often do we take new readings
+

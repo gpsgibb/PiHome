@@ -2,16 +2,16 @@ import os
 import datetime
 import numpy as np
 
-import utils.logs as logs
+import utils.logger as logger
 from . import Dates
 
 #This file contains functions that extract data from the database and prepare them for use with the website
 
-logs.connect_logs_database()
+logger.init()
 
 homedir = os.path.expanduser("~")
 
-#Gets all the months with data from the logs
+#Gets all the months with data from the logger
 # returns a list of dictionaries containing:
 #    text: The text we wish the month to be rendered as e.g "January 2020"
 #    url: The url for this month e.g. /data/2020/01
@@ -20,11 +20,11 @@ def GetAllMonths():
     Months = []
     
     #get list of all the years with data
-    years = logs.get_years()
+    years = logger.get_years()
 
     for year in years:
         #get list of all the months with data in this year
-        months = logs.get_months(year)
+        months = logger.get_months(year)
 
         #construct thr dictionary for this month
         for month in months:
@@ -57,7 +57,7 @@ def GetAllMonths():
 def CreateCalendar(year,month):
 
     #get the list of days in the month with data entries
-    days=logs.get_days(year,month)
+    days=logger.get_days(year,month)
 
     #Count the number of days in a month
     # first get the first of the next month, and count the number of days
@@ -117,7 +117,7 @@ def CreateCalendar(year,month):
 # is returned as a list of dictionaries, one per variable type
 def GetLatestData():
 
-    latest = logs.get_latest_readings()
+    latest = logger.get_latest_readings()
 
     data = PrepData(latest)
 
@@ -134,7 +134,7 @@ def GetLatestData():
 # is returned as a list of dictionaries, one per variable type
 def GetDataForDay(year,month,day):
 
-    data = logs.get_all_stats_for_day(year,month,day)
+    data = logger.get_all_stats_for_day(year,month,day)
 
     return PrepData(data)
 
@@ -142,7 +142,7 @@ def GetDataForDay(year,month,day):
 # is returned as a list of dictionaries, one per variable type
 def GetDataForMonth(year,month):
 
-    data = logs.get_all_stats_for_month(year,month)
+    data = logger.get_all_stats_for_month(year,month)
 
     return PrepData(data)
 
@@ -150,7 +150,7 @@ def GetDataForMonth(year,month):
 # is returned as a list of dictionaries, one per variable type
 def GetDataForYear(year):
 
-    data = logs.get_all_stats_for_year(year)
+    data = logger.get_all_stats_for_year(year)
 
     return PrepData(data)
 

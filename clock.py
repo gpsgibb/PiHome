@@ -2,10 +2,14 @@
 from __future__ import print_function
 import numpy as np
 import time
+import json
+import datetime
+
+
+from utils import logger, GetConfig
 import drivers
 import sensors
-import datetime
-import utils
+
 
 #This code uses a Adafruit 16x8 LED matrix to act as a clock, with an
 #added DHT sensor to record and display the temperature and humidity.
@@ -175,6 +179,15 @@ def display_chars(char1,char2,char3,char4,temp, hum,matrix):
 
 
 if __name__ == "__main__":
+
+    config = GetConfig(key="clock")
+
+    refresh_rate = config["refresh_rate"]
+    data_cadence = config["data_cadence"]
+
+    interval = data_cadence/refresh_rate
+
+
     
     try:
         #setup LED matrix     
@@ -182,35 +195,67 @@ if __name__ == "__main__":
         matrix.set_brightness(0)
         matrix.set_blink(0)
         
-        #set up logger
+        #set up DHT
         DHT=sensors.DHT(21,22)
-        logger=utils.Logger("TempHum",3,["Temperature","Humidity","Attempts"])
+
+    
+        #set up logger
+        logger.init()
+
+         # logger=utils.Logger("TempHum",3,["Temperature","Humidity","Attempts"])
+        
+        #register temperature and humidity with the database
+        logger.register_variable(name="Temperature",
+                            unit="°C",
+                            description="Bedroom Temperature",
+                            min=15.0,
+                            max=30.0)
+        logger.register_variable(name="Humidity",
+                            unit="%",
+                            description="Bedroom Relative Humidity",
+                            min=0.0,
+                            max=100.0)
     
         
         #loop for the clock
         i=0
         while True:
-           #Take temperature reading every 30 loops
-           if i%30==0:
-               result=DHT.read()
-               if result["status"]==sensors.DHTsensor.SUCCESS:
-                   temp=result["Temperature"]
-                   hum=result["Humidity"]
-                   attempts=result["tries"]+1
-                   logger.log(Temperature=temp,Humidity=hum,Attempts=attempts)
-                   print(datetime.datetime.now(), temp, hum)
-               else:
+            #Take temperature reading every 30 loops
+            if i%interval == 0:
+                result=DHT.read()
+                if result["status"]==sensors.DHTsensor.SUCCESS:
+                    temp=result["Temperature"]
+                    hum=result["Humidity"]
+                    attempts=result["tries"]+1
+                    #logger.log(Temperature=temp,Humidity=hum,Attempts=attempts)
+                    #register the data, opting to not recompute the statistics as we will do this at the end of the day
+                    metadata = json.dumps({"attempts":attempts})
+
+                    logger.register_reading(variable="Temperature",
+                                            value = temp, 
+                                            metadata = metadata)
+                    logger.register_reading(variable="Humidity",
+                                            value = hum, 
+                                            metadata = metadata)
+
+                    print(datetime.datetime.now(), temp, hum)
+                else:
+                   #if this has failed, display 0 for the temp and hum
                    temp=0
                    hum=0
                    print(result["status"], sensors.DHTsensor.SUCCESS)
-           #get current time
-           t=datetime.datetime.now()
-           hh=int(t.hour)
-           mm=int(t.minute)
-           #update display
-           display_chars((hh/10)%10,hh%10,(mm/10)%10,mm%10,temp, hum,matrix)
-           i+=1
-           time.sleep(10)
+            #get current time
+            t=datetime.datetime.now()
+            hh=int(t.hour)
+            mm=int(t.minute)
+            #update display
+            display_chars((hh/10)%10,hh%10,(mm/10)%10,mm%10,temp, hum,matrix)
+            i+=1
+            time.sleep(refresh_rate)
+
+    except Exception as e:
+        print(e)
+        raise e
            
            
     finally:

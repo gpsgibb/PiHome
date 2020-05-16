@@ -1,4 +1,4 @@
-import logs
+import logger
 import datetime
 import json
 import os
@@ -24,7 +24,7 @@ def read_TempHum_file(file):
     numreadings = len(lines)
     
     #get readings in the database for this day and count them
-    dbreadings = logs.get_daily_readings(day.year,day.month,day.day,"Temperature")
+    dbreadings = logger.get_daily_readings(day.year,day.month,day.day,"Temperature")
     numdb = len(dbreadings)
     
     #data in database seems to match data in logfile. Skip this file
@@ -55,20 +55,20 @@ def read_TempHum_file(file):
         metadata = json.dumps({"attempts":attempts})
 
         #register the data, opting to not recompute the statistics as we will do this at the end of the day
-        logs.register_reading(variable="Temperature",
+        logger.register_reading(variable="Temperature",
                                 value = temperature, 
                                 date=day+dt,
                                 metadata = metadata,
                                 recompute_statistics=False)
-        logs.register_reading(variable="Humidity",
+        logger.register_reading(variable="Humidity",
                                 value = humidity, 
                                 date=day+dt,
                                 metadata = metadata,
                                 recompute_statistics=False)
     
     #update/generate the statistics for this day
-    logs.generate_daily_statistics(day.year,day.month,day.day,"Temperature")
-    logs.generate_daily_statistics(day.year,day.month,day.day,"Humidity")
+    logger.generate_daily_statistics(day.year,day.month,day.day,"Temperature")
+    logger.generate_daily_statistics(day.year,day.month,day.day,"Humidity")
 
     
 
@@ -76,30 +76,30 @@ def read_TempHum_file(file):
 
 
 if __name__ == "__main__":
-    logs.connect_logs_database()
+    logger.connect_logger_database()
 
     #register temperature and humidity with the database
-    logs.register_variable(name="Temperature",
+    logger.register_variable(name="Temperature",
                            unit="°C",
                            description="Bedroom Temperature",
                            min=15.0,
                            max=30.0)
-    logs.register_variable(name="Humidity",
+    logger.register_variable(name="Humidity",
                            unit="%",
                            description="Bedroom Relative Humidity",
                            min=0.0,
                            max=100.0)
     
     #get all the log files and read them into the database
-    logfiles = os.listdir("logs")
+    logfiles = os.listdir("logger")
     logfiles.sort()
     for logfile in logfiles:
-        read_TempHum_file("logs/%s"%logfile)
+        read_TempHum_file("logger/%s"%logfile)
     
     #finally compute all the statistics
-    logs.generate_all_statistics(yearly=True,monthly=True,daily=False)
+    logger.generate_all_statistics(yearly=True,monthly=True,daily=False)
 
-    logs.generate_latest_stats()
+    logger.generate_latest_stats()
 
 
 
