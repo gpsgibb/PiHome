@@ -78,9 +78,15 @@ Browse data
               {% for item in data %}
 
                   <h2> {{item.variable}}</h2>
+
                   {% if item.age is defined %}
-                  <p> Last reading taken approximately {{item.age}} ago</p>
+                  <p> <i>Last reading taken approximately {{item.age}} ago </i></p>
                   {% endif %}
+                 
+                  {% if item.value is defined %}
+                  <p> Latest = {{item.value}} {{item.unit}}</p>
+                  {% endif %}
+                 
 
                   <p> Mean = {{item.mean}} {{item.unit}}</p>
                   <p> Median = {{item.median}} {{item.unit}}</p>
