@@ -75,7 +75,7 @@ def LatestDataPage():
     day = today.day
     PrevNext=Dates.PrevNextDay(year, month,day)
 
-    response=flask.make_response(flask.render_template("data.html",hostname=hostname,data=data, months=months,DataTitle="Latest Data",PrevNext=PrevNext))
+    response=flask.make_response(flask.render_template("data.html",hostname=hostname,data=data, months=months,DataTitle="Latest",PrevNext=PrevNext))
 
     return request_no_caching(response)
 
@@ -140,14 +140,37 @@ def DataForDayPage(year,month,day):
 
     return flask.render_template("data.html",data=data,hostname=hostname,months=months,DataTitle=pagetitle,PrevNext=PrevNext)
 
+#Work in progress. Will output info on the database
+@app.route("/db")
+def db_stats():
 
-#Request that we don't cache anything
+    filesize = FromLogs.GetDBFileSize()
+
+    path = FromLogs.GetDBFilename()
+
+    total_readings = FromLogs.GetReadingCount()
+
+    file = {
+        "filesize": filesize,
+        "path": path,
+        "numreadings": total_readings
+    }
+
+    variables = FromLogs.GetDBVariables()
+
+    print(json.dumps(variables))
+    
+
+    return flask.render_template("database.html",file=file, variables=variables,hostname=hostname)
+
+
+#Request not to cache anything (else the images tend not to be reloaded by the browser)
+@app.after_request
 def request_no_caching(response):
     response.headers["Cache-Control"]='no-cache, no-store, must-revalidate'
     response.headers["pragma"]='no-cache'
     response.headers["expires"]="0"
     return response
-
 
 
 if __name__ == "__main__":

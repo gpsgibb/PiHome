@@ -687,6 +687,31 @@ def get_days(year,month):
 
     return days
 
+#returns info on the variables in the database
+@pny.db_session
+def get_variables():
+
+    variables = db.Variable.select()
+
+    vs=[]
+
+    for v in variables:
+        print(v.name)
+
+    for v in variables:
+        d={}
+        d["name"] = v.name
+        d["unit"] = v.unit
+        d["description"] = v.description
+        d["numreadings"] = v.readings.count()
+
+        vs.append(d)
+    
+    return(vs)
+
+@pny.db_session
+def get_reading_count(format=False):
+    return db.Reading.select().count()
 
 
 if __name__ == "__main__":

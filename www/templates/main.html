@@ -20,20 +20,15 @@
 
                 <li> <a {%block datablock%} class="navigator_link"{%endblock%} href="/data"> Data </a> </li>
 
+                <li> <a {%block dbblock%} class="navigator_link"{%endblock%} href="/db"> Database </a> </li>
+
                 <li class="Hostname"> {{hostname}}  </li>
 
             </ul>
 
         </div>
 
-        <div class="body">
-
-            <div class="TitleBar">
-
-                <!-- <h1>{% block Title%} {% endblock %}</h1> -->
-
-            </div>
-
+        <div class="content">
             {% block body %}
 
             {% endblock %}

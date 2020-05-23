@@ -1,0 +1,69 @@
+{% extends "main.html" %}
+
+{% block PageTitle %}
+    Database
+{% endblock %}
+
+{% block dbblock %}
+    class="active_navigator"
+{% endblock %}
+
+{% block Title %}
+Browse data
+{% endblock %}
+
+{% block body %}
+
+      <table class="dbtable">
+        <tr>
+          
+          <th colspan="5" class="dbtitle"> File properties</th>
+          <!-- <th> Header 2</th> -->
+        </tr>
+        <tr>
+          <th colspan="2" class="dbtable"> Path </td>
+          <td colspan="3" class="dbtable"> {{file.path}} </td>
+        </tr>
+        <tr>
+          <th colspan="2" class="dbtable"> Filesize </td>
+          <td colspan="3" class="dbtable"> {{file.filesize}} </td>
+        </tr>
+        <tr>
+          <th colspan="2" class="dbtable"> # of Readings</td>
+          <td colspan="3" class="dbtable"> {{file.numreadings}} </td>
+        </tr>
+
+
+        <!-- Blank row for spacing -->
+        <tr>
+          <td colspan="5" class="dbtable" ><br/></th>
+        </tr>
+
+       
+        <tr>
+          <th colspan="5" class="dbtitle"> Variables </th>
+        </tr>
+
+        <tr> 
+          <th class="dbtable">Name</td>
+          <th class="dbtable"> Unit</td>
+          <th colspan="2" class="dbtable"> Description</td>
+          <th class="dbtable"> # of readings</td>
+        </tr>
+
+        {% for variable in variables %}        
+        <tr> 
+          <td class="dbtable">{{variable.name}}</td>
+          <td class="dbtable"> {{variable.unit}}</td>
+          <td colspan="2" class="dbtable"> {{variable.description}}</td>
+          <td class="dbtable"> {{variable.numreadings}}</td>
+        </tr>
+        {% endfor %}
+        
+
+      </table>
+
+
+
+
+{%endblock%}

@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block datablock %}
-    class="active"
+    class="active_navigator"
 {% endblock %}
 
 {% block Title %}
@@ -16,11 +16,11 @@ Browse data
 
       <!-- Table containing the list of months -->
       <div>
-      <ul class="table">
-        <li> <a href="/data" {% if request.path == "/data/" %} class="active" {%else%} class="navigator_link" {%endif%}> Latest Data </a> </li>
+      <ul class="monthlist">
+        <li> <a href="/data" {% if request.path == "/data/" %} class="active_navigator" {%else%} class="navigator_link" {%endif%}> Latest </a> </li>
         {%for item in months%}
             <li>
-              <a href='{{item.url}}'  {% if item.url in request.path%} class="active" {%else%} class="navigator_link" {%endif%}> {{item.text}} </a>
+              <a href='{{item.url}}'  {% if item.url in request.path%} class="active_navigator" {%else%} class="navigator_link" {%endif%}> {{item.text}} </a>
             </li>
         {%endfor%}
       </ul>
@@ -43,7 +43,7 @@ Browse data
 
       <!-- The calendar (if we're on date view) -->
       {%if calendar is defined %}
-          <div class="data">
+          <div class="datacontent">
           <table>
             <tr>
               <td class="day_header"> Mon </td>
@@ -73,7 +73,7 @@ Browse data
 
 
       {%if data != None %}
-          <div class="data">
+          <div class="datacontent">
 
               {% for item in data %}
 
@@ -103,7 +103,7 @@ Browse data
 
       <!-- If there is no data we display the "no data available" message -->
       {% if (data == None)  %}
-      <div class="data">
+      <div class="datacontent">
         <h1 style="text-align: center;"> No data available </h1>
       </div>
       {%endif%}

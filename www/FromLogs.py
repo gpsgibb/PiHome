@@ -3,13 +3,20 @@ import datetime
 import numpy as np
 
 import utils.logger as logger
+import utils.GetConfig as GetConfig
+from .Status import command
 from . import Dates
+
+
 
 #This file contains functions that extract data from the database and prepare them for use with the website
 
 logger.init()
 
 homedir = os.path.expanduser("~")
+
+#get the configuration for the logger
+dbconfig = GetConfig(key="logger")
 
 #Gets all the months with data from the logger
 # returns a list of dictionaries containing:
@@ -176,6 +183,51 @@ def PrepData(data):
                 reading["plot"] = os.path.join("/files",path)
     
     return data
+
+#gets the size of the database file (in human readable format)
+def GetDBFileSize():
+    file = os.path.join(dbconfig["dbdir"],dbconfig["dbname"])
+
+    result = command(["du", "-h", "%s"%file])
+
+    size = result.split()[0]
+
+    return size
+
+#returns the filename (path) of the file
+def GetDBFilename():
+    return os.path.join(dbconfig["dbdir"],dbconfig["dbname"])
+
+#formats an integer in a human readable way. E.g. 1234567 -> 1,234,567
+def _formatInt(i):
+    #convert to a string
+    s = "%d"%i
+
+    #we want to go right to left and insert commas
+    #n = Number of times we need to do this
+    l=len(s)
+    n = (l-1)//3
+    for split in range(n):
+        splitpoint = -(3*(split+1) + split)
+        s = s[:splitpoint]+","+s[splitpoint:]
+
+    return s
+
+
+#gets a list of the variables held in the database. Each list element is a dict containing the variable's info
+def GetDBVariables():
+    vs = logger.get_variables()
+    for v in vs:
+        v["numreadings"] = _formatInt(v["numreadings"])
+
+    return vs
+
+#Gets the total number of readings in the database
+def GetReadingCount():
+    c = logger.get_reading_count()
+    return _formatInt(c)
+
+
     
 
 

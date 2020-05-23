@@ -1,28 +1,37 @@
+:root{
+  --dark-colour:  #373E40;
+  --highlight-colour: #68EDC6;
+  --hostname-colour: #305252;
+
+  /* --highlight-colour: #3C8DBC; */
+
+}
+
 body {
   background-color: White;
   margin: 0;
   padding: 0;
 }
 
-a:visited {
-  color: Blue
+/* general style for tables */
+table{
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center; 
 }
 
-.body{
-    margin: 0;
-    padding: 0;
-}
 
+/* navigator bar at top */
 .navigator_container{
     width: 100%;
-    background-color: #373E40;
+    background-color: var(--dark-colour);
     position: fixed;
     margin: 0;
     padding: 0;
     z-index: 1
-
 }
 
+/* container for the navigator list */
 .navigator_list{
     list-style-type: none;
     margin: 0;
@@ -30,17 +39,20 @@ a:visited {
     width: 100%;
 }
 
+/* Items of the navigator list */
 .navigator_list li{
   float: left;
 }
 
+/* The special hostname list item */
 .navigator_list li.hostname{
   float: right;
   color: white;
-  background-color: #305252;
+  background-color: var(--hostname-colour);
   padding: 1pc 1pc;
 }
 
+/* a link in the navigator list */
 .navigator_link{
     display: block;
     text-decoration: none;
@@ -48,35 +60,34 @@ a:visited {
     color: White;
 }
 
+.navigator_link:visited{
+  color: white;
+}
 
-.active{
-    background-color: #68EDC6;
+.navigator_link:hover{
+    background-color: var(--highlight-colour);
+    color: Black;
+}
+
+
+.active_navigator{
+    background-color: var(--highlight-colour);
     color: Black;
     display: block;
     text-decoration: none;
     padding: 1pc 1pc;
 }
 
-.active:visited{
-    color: Black;
-}
-
-.navigator_link:visited{
-  color: white;
-}
-
-.navigator_link:hover{
-    background-color: #68EDC6;
+.active_navigator:visited{
     color: Black;
 }
 
 
-
-.body{
+/* Style for the content (e.g. the part of the page where the content is displayed */
+.content{
     margin: auto;
     padding: 4pc 1pc;
 }
-
 
 h1{
   text-align: center;
@@ -87,52 +98,73 @@ h2{
   margin: 0.5pc
 }
 
+
+/* Style for fixed-width fonts */
 pre {
   background-color: LightGrey;
   color: Black;
   margin: 1pc;
   padding: 1pc;
-  background-color: #373E40;
-  color: #68EDC6;
+  background-color: var(--dark-colour);
+  color: var(--highlight-colour);
+  color: white;
 }
 
 
-.data{
+/* Title for the data page */
+.DataTitle {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  justify-content: center;
+  margin: 0pc 1pc;
+  }
+
+/* style for divs for displaying data */
+.datacontent{
   margin: 0pc 1pc;
   padding-top: 0;
   text-align: center;
   overflow: auto;
-
 }
 
-table{
-  margin-left: auto;
-  margin-right: auto;
-  text-align: center;
+/* The panel on the LHS for showing the months with data */
+.monthlist {
+  float:left;
+  background: var(--dark-colour);
+  color: white;
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
 }
 
-table td{
+/* day header for calendar */
+table td.day_header{
+  background-color: var(--dark-colour);
+  color: white;
   padding: 1pc;
   width: 2pc;
-  background: White;
-  background: #E7ECEF;
-  color: LightGrey;
 }
 
-table td.day_header{
-  background-color: Green;
-  background-color: #373E40;
-  color: white;
-}
-
+/* calendar item if we have data for this day */
 table td.td_active{
-  background: rgb(34,45,50);
   background: #E7ECEF;
   color: Black;
   padding: 0;
   margin: 0;
 }
 
+/* calendar item if we have not data for that day */
+table td.td_inactive{
+  background: #E7ECEF;
+  color: LightGrey;
+  margin: 0;
+  /* Need the below lines to ensure these are the same as the td a{} */
+  padding: 1pc;
+  width: 2pc;
+}
+
+/* For a link in a table */
 td a{
   text-decoration: none;
   color: Black;
@@ -145,109 +177,29 @@ td a:visited{
 }
 
 td a:hover{
-  background: LightGreen;
-  background: #68EDC6;
+  background: var(--highlight-colour);
   color: black;
 }
 
 
-
-.table {
-    float:left;
-    background:rgb(34,45,50);
-    background: #373E40;
-    color: white;
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
-}
-
-.table_header{
-  background-color: Green;
-  padding: 1pc 1pc;
-}
-
-
-.DataTitle {
-  display: flex;
-  align-items: center;
-  text-align: center;
-  justify-content: center;
-  margin: 0pc 1pc;
-}
-
-
-.header {
-  background-color: Navy;
-  color: White;
-  display: flex;
-  margin: 0px;
-  padding: 0pc 0pc;
-   position: relative;
-  float: right;
-}
-
-
-
-.box{
-  margin: 0;
-}
-
-.boxlink{
-  color: white;
-  text-decoration: None;
-  padding: 1pc;
-  position: relative;
-  float: left;
-}
-
-.rightbox{
-  padding: 1pc;
-  margin: 0pc;
-  text-align: right;
-  float: right;
-  color: White;
-  background: Black;
-  position: relative;
-}
-
-.boxlink:visited{
-  color: White;
-}
-
-.boxlink:hover{
-  background: DodgerBlue;
-  color: Black;
-}
-
-.header_box a {
-  color: White;
-}
-
-
-
 /* File browser table colours */
 .fgrey {
-  background-color: AliceBlue;
-  background-color: LightCyan;
-  background-color: rgb(224,255,224);
   background-color: #E7ECEF;
   padding: 0.25pc;
   margin: 0px;
 }
 
 .fgrey:hover{
-  background-color: #68edc6;
+  background-color: var(--highlight-colour);
 }
 
 .fwhite {
   padding: 0.25pc;
   margin: 0px;
-
 }
 
 .fwhite:hover{
-  background-color: #68edc6;
+  background-color: var(--highlight-colour);
 }
 
 a.FileLink {
@@ -264,4 +216,27 @@ a.dirlink {
 
 a.dirlink:hover{
   color: #305252;
+}
+
+
+
+/* Database table formatting */
+table.dbtable{
+  border-collapse: collapse;
+}
+
+th.dbtitle{
+  padding: 10px;
+}
+
+th.dbtable{
+  padding: 5px;
+  text-align: left;
+  margin: 0;
+}
+
+td.dbtable{
+  padding: 5px;
+  margin: 0;
+  text-align: left;
 }
