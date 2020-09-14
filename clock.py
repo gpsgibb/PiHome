@@ -178,6 +178,14 @@ def display_chars(char1,char2,char3,char4,temp, hum,matrix):
     matrix.set_buffer(buffer)
     matrix.write_buffer()
 
+def update_display(temp, hum, matrix):
+    t=datetime.datetime.now()
+    hh=int(t.hour)
+    mm=int(t.minute)
+    #update display
+    display_chars((hh/10)%10,hh%10,(mm/10)%10,mm%10,temp, hum,matrix)
+    print("%s: Display updated"%t)
+    
 
 if __name__ == "__main__":
 
@@ -197,7 +205,8 @@ if __name__ == "__main__":
         matrix.set_blink(0)
         
         #set up DHT
-        DHT=sensors.DHT(21,22)
+        #DHT=sensors.DHT(21,22)
+        BME = sensors.BME280()
 
     
         #set up logger
@@ -216,6 +225,11 @@ if __name__ == "__main__":
                             description="Bedroom Relative Humidity",
                             min=0.0,
                             max=100.0)
+        logger.register_variable(name="Pressure",
+                            unit="hPa",
+                            description="Bedroom Barometric Pressure",
+                            min=950.0,
+                            max=1050.0)
     
         
         #loop for the clock
@@ -223,34 +237,40 @@ if __name__ == "__main__":
         while True:
             #Take temperature reading every 30 loops
             if i%interval == 0:
-                result=DHT.read()
-                if result["status"]==sensors.DHTsensor.SUCCESS:
-                    temp=result["Temperature"]
-                    hum=result["Humidity"]
-                    attempts=result["tries"]+1
-                    #logger.log(Temperature=temp,Humidity=hum,Attempts=attempts)
-                    #register the data, opting to not recompute the statistics as we will do this at the end of the day
-                    metadata = json.dumps({"attempts":attempts})
-
+                try:
+                    result = BME.read()
+                    temp = result["Temperature"]["Value"]
+                    hum = result["Humidity"]["Value"]
+                    pres = result["Pressure"]["Value"]
+                    print("Temperature = %f C"%temp)
+                    print("Pressure = %f hPa"%pres)
+                    print("Humidity = %f %%"%hum)
+                    
+                    update_display(temp,hum,matrix)
+                    
                     logger.register_reading(variable="Temperature",
-                                            value = temp, 
-                                            metadata = metadata)
+                                            value = temp) 
+                    
+                    update_display(temp,hum,matrix)
+                                            
                     logger.register_reading(variable="Humidity",
-                                            value = hum, 
-                                            metadata = metadata)
-
-                    print(datetime.datetime.now(), temp, hum)
-                else:
+                                            value = hum)
+                    
+                    update_display(temp,hum,matrix)
+                    
+                    logger.register_reading(variable="Pressure",
+                                            value = pres)
+                    
+                    
+                except IOError:
                    #if this has failed, display 0 for the temp and hum
                    temp=0
                    hum=0
-                   print(result["status"], sensors.DHTsensor.SUCCESS)
+                   
+                    
+                
             #get current time
-            t=datetime.datetime.now()
-            hh=int(t.hour)
-            mm=int(t.minute)
-            #update display
-            display_chars((hh/10)%10,hh%10,(mm/10)%10,mm%10,temp, hum,matrix)
+            update_display(temp,hum,matrix)
             i+=1
             time.sleep(refresh_rate)
 
@@ -263,7 +283,7 @@ if __name__ == "__main__":
     finally:
     
         matrix.finalise()
-        DHT.finalise()
+        #DHT.finalise()
 
 
 
