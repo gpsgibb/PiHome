@@ -15,3 +15,5 @@ The `www` directory contains code for a flask-based webapp that displays info ab
 The file `clock.py` controls a "smart" bedside clock that measures, logs and displays the temperature and humidity of my bedroom.
 
 The `website.py` file is the entry point for the website
+
+`power_monitor.py` logs the electricity usage of my home using a split core current transformer to non-invasively measure the electrical current going into my home, and hence the power used.

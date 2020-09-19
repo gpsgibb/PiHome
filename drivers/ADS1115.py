@@ -203,7 +203,10 @@ class ADS1115():
         #update the device's config
         if update_config:
             self._send_config()
-        
+    
+    def get_resolution(self):
+        return self.vmax/(2**15)
+    
     def get_vmax(self):
         return self.vmax
     
@@ -212,7 +215,11 @@ class ADS1115():
         #sleep to ensure the reading has been made
         time.sleep(1./self.rate)# + 0.0005)
         
-        vals = self.bus.read_i2c_block_data(self.address,CONV_REG_ADDR,2)
+        # "handle" a bus error by returning None
+        try:
+            vals = self.bus.read_i2c_block_data(self.address,CONV_REG_ADDR,2)
+        except IOError:
+            return None
         
         #combine the bytes into a uint
         val = (vals[0]<<8)|(vals[1])
@@ -232,8 +239,18 @@ class ADS1115():
     def _send_config(self,OS=OS):
         config=[OS<<7|self.MUX<<4|self.PGA<<1|self.MODE,
                     self.DR<<5|self.COMP_MODE<<3|self.COMP_LAT<<2|self.COMP_QUE]
-            
-        self.bus.write_i2c_block_data(self.address,CONFIG_REG_ADDR,config)
+        
+        #make 10 attempts to write the config
+        for i in range(10):
+            try:
+                self.bus.write_i2c_block_data(self.address,CONFIG_REG_ADDR,config)
+                break
+            except IOError as e:
+                print("Warning:",e)
+                time.sleep(0.01)
+                if i == 9:
+                    raise e
+                    
         
         
 #quick test code        
