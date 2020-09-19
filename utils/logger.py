@@ -39,8 +39,13 @@ def register_variable(name, unit, description, min=None, max=None, cumulative = 
         print("Created!")
     else:
         if (var.unit != unit) or (var.description != description) or (var.minval != min) or (var.maxval != max) or (var.cumulative != cumulative):
-            print("Error: Variable properties do not match what is already in the db")
-            raise Exception("Trying to create a variable with properties that do not equal those already in the database")
+            print("Warning: Variable properties do not match what is already in the db")
+            #raise Exception("Trying to create a variable with properties that do not equal those already in the database")
+        var.unit=unit
+        var.description=description
+        var.minval = min
+        var.maxval = max
+        var.cumulative = cumulative
 
     #we also need to create the LatestReading object for this variable    
     latest = db.LatestReading.get(variable=var)
