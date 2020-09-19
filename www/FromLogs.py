@@ -169,6 +169,7 @@ def PrepData(data):
     if data is not None:
         for reading in data:
             
+            
             #Convert the floats to formatted strings
             if reading["mean"] is not None:
                 reading["mean"] = "%4.1f"%reading["mean"]
@@ -176,6 +177,10 @@ def PrepData(data):
                 reading["maxval"] = "%4.1f"%reading["maxval"]
                 reading["minval"] = "%4.1f"%reading["minval"]
                 reading["stddev"] = "%4.1f"%reading["stddev"]
+            if reading["total"] is not None:
+                reading["total"] = "%4.1f"%reading["total"]
+            if "value" in reading:
+                reading["value"] = "%4.1f"%reading["value"]
             
             #mangle the path for the image to something we can serve up
             if reading["plot"] is not None:
