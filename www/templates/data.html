@@ -41,6 +41,8 @@ Browse data
         {% endif %}
       </div>
 
+      <div class="datacontent">
+
       <!-- The calendar (if we're on date view) -->
       {%if calendar is defined %}
           <div class="datacontent">
@@ -83,15 +85,20 @@ Browse data
                   <p> <i>Last reading taken approximately {{item.age}} ago </i></p>
                   {% endif %}
                  
-                  {% if item.value is defined %}
+                  {% if item.value is defined and item.total is none %}
                   <p> Latest = {{item.value}} {{item.unit}}</p>
                   {% endif %}
                  
-
+                  {% if item.total is not none %}
+                  <p> Total over period = {{item.total}} {{item.unit}}</p>
+                  {% else %}
                   <p> Mean = {{item.mean}} {{item.unit}}</p>
                   <p> Median = {{item.median}} {{item.unit}}</p>
                   <p> Maximum = {{item.maxval}} {{item.unit}}</p>
                   <p> Minimum = {{item.minval}} {{item.unit}}</p>
+                  {% endif %}
+
+                  
                   <p> <img src='{{item.plot}}'> </p>
               
               {% endfor %}
@@ -107,6 +114,8 @@ Browse data
         <h1 style="text-align: center;"> No data available </h1>
       </div>
       {%endif%}
+
+    </div>
 
 
 {%endblock%}

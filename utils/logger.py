@@ -184,6 +184,8 @@ def generate_latest_stats(variable=None):
 
     for var in variables:
 
+        cumulative = var.cumulative
+
         Latest=db.LatestReading.get(variable=var)
 
         #get the latest reading and add this to the LatestReading object in the db.
@@ -203,11 +205,15 @@ def generate_latest_stats(variable=None):
         v=np.asarray(v)
 
         if len(v) > 0:
-            Latest.mean = np.mean(v)
-            Latest.median = np.median(v)
-            Latest.maxval = np.max(v)
-            Latest.minval = np.min(v)
-            Latest.stddev = np.std(v)
+            if not cumulative:
+                Latest.mean = np.mean(v)
+                Latest.median = np.median(v)
+                Latest.maxval = np.max(v)
+                Latest.minval = np.min(v)
+                Latest.stddev = np.std(v)
+            else:
+                Latest.total = sum(v)
+
         else:
             Latest.mean = None
             Latest.median = None
@@ -216,26 +222,41 @@ def generate_latest_stats(variable=None):
             Latest.stddev=None
             Latest.total = None
 
-        print("Generating latest plot for %s"%var.name)
+        
 
         #plot the values over the day
+        print("Generating latest plot for %s"%var.name)
+
         fig, ax = plt.subplots()
         myFmt = mdates.DateFormatter('%H:%M\n%d/%m')
         ax.xaxis.set_major_formatter(myFmt)
-        plt.plot(t,v)
+
+        if not cumulative:
+            
+            plt.plot(t,v)
+            
+        else:
+            hours = [oneDayAgo+datetime.timedelta(hours=j,minutes=30) for j in range(24)]
+            vals = np.zeros((24))
+            for i in range(len(v)):
+                dt = (t[i]-oneDayAgo).seconds//3600
+                vals[dt] += v[i]
+            plt.bar(hours,vals,width=1./24)
+                
         plt.title("Latest %s"%(var.name))
 
         plt.ylabel("%s (%s)"%(var.name,var.unit))
         plt.ylim(var.minval,var.maxval)
         plt.xlim(oneDayAgo,datetime.datetime.now())
-        
+
+
+       
         #save the plot to file 
         fname = os.path.join(plotdir,"Latest_%s.png"%(var.name))
 
         plt.savefig(fname)
         plt.close()
-        
-        
+    
         Latest.plot=fname
 
 
@@ -250,6 +271,8 @@ def generate_daily_statistics(year,month,day,variable):
     Variable = db.Variable.get(name=variable)
     Day = _get_day(year,month,day)
     stats = db.Daily_statistics.get(day=Day,variable=variable)
+
+    cumulative = Variable.cumulative
     
     #extract the readings for that day from the statistics
     readings = stats.readings.order_by(lambda r: r.date)
@@ -264,17 +287,32 @@ def generate_daily_statistics(year,month,day,variable):
     vals=np.asarray(vals)
     
     #calculate the statistics
-    stats.mean = np.mean(vals)
-    stats.median = np.median(vals)
-    stats.minval = np.min(vals)
-    stats.maxval = np.max(vals)
-    stats.stddev = np.std(vals)
+    if not cumulative:
+        stats.mean = np.mean(vals)
+        stats.median = np.median(vals)
+        stats.minval = np.min(vals)
+        stats.maxval = np.max(vals)
+        stats.stddev = np.std(vals)
+    else:
+        stats.total = np.sum(vals)
     
     #plot the values over the day
     fig, ax = plt.subplots()
     myFmt = mdates.DateFormatter('%H:%M')
     ax.xaxis.set_major_formatter(myFmt)
-    plt.plot(t,vals)
+    if not cumulative:
+        plt.plot(t,vals)
+    else:
+        t0 = datetime.datetime.combine(datetime.date(day=day,month=month,year=year),datetime.time.min)
+        hours = [t0+datetime.timedelta(hours=j,minutes=30) for j in range(24)]
+        totals = np.zeros((24))
+
+        for i in range(len(vals)):
+            h = t[i].hour
+            totals[h] += vals[i]
+           
+        plt.bar(hours,totals,width=(1./24))
+
     plt.title("%4d-%02d-%02d"%(year,month,day))
     plt.xlabel("Time")
     plt.ylabel("%s (%s)"%(Variable.name,Variable.unit))
@@ -300,6 +338,8 @@ def generate_monthly_statistics(year,month,variable):
     Variable = db.Variable.get(name=variable)
     Month = _get_month(year,month)
     stats = db.Monthly_statistics.get(month=Month,variable=variable)
+
+    cumulative = Variable.cumulative
     
     #extract the statistics for each day in the month
     days = stats.days.order_by(lambda d: d.day.day)
@@ -309,37 +349,49 @@ def generate_monthly_statistics(year,month,variable):
     maxval = []
     median = []
     std = []
+    totals=[]
 
-    #create arrays of each day's statistics
-    for day in days:
-        vals.append(day.mean)
-        t.append(day.day.day)
-        minval.append(day.minval)
-        maxval.append(day.maxval)
-        median.append(day.median)
-        std.append(day.stddev)
+    if not cumulative:
+        #create arrays of each day's statistics
+        for day in days:
+            vals.append(day.mean)
+            t.append(day.day.day)
+            minval.append(day.minval)
+            maxval.append(day.maxval)
+            median.append(day.median)
+            std.append(day.stddev)
 
 
-    vals=np.asarray(vals)
-    minval = np.asarray(minval)
-    maxval = np.asarray(maxval)
-    median = np.asarray(median)
-    std = np.asarray(std)
-    
-    #calculate some statistics for the month
-    stats.mean = np.mean(vals)
-    stats.median = np.median(vals)
-    stats.minval = np.min(minval)
-    stats.maxval = np.max(maxval)
-    stats.stddev = np.std(vals)
+        vals=np.asarray(vals)
+        minval = np.asarray(minval)
+        maxval = np.asarray(maxval)
+        median = np.asarray(median)
+        std = np.asarray(std)
+        
+        #calculate some statistics for the month
+        stats.mean = np.mean(vals)
+        stats.median = np.median(vals)
+        stats.minval = np.min(minval)
+        stats.maxval = np.max(maxval)
+        stats.stddev = np.std(vals)
 
-    #plot the month's data
-    plt.plot(t,vals,color="black")
-    plt.plot(t,median,linestyle="--",color="black")
-    plt.fill_between(t,minval,vals,color="blue",alpha=0.25)
-    plt.fill_between(t,vals,maxval,color="red",alpha=0.25)
-    plt.fill_between(t,vals-std,vals,color="blue",alpha=0.5)
-    plt.fill_between(t,vals,vals+std,color="red",alpha=0.5)
+        #plot the month's data
+        plt.plot(t,vals,color="black")
+        plt.plot(t,median,linestyle="--",color="black")
+        plt.fill_between(t,minval,vals,color="blue",alpha=0.25)
+        plt.fill_between(t,vals,maxval,color="red",alpha=0.25)
+        plt.fill_between(t,vals-std,vals,color="blue",alpha=0.5)
+        plt.fill_between(t,vals,vals+std,color="red",alpha=0.5)
+
+        
+    else:
+        for day in days:
+            totals.append(day.total)
+            t.append(day.day.day+0.5)
+
+        stats.total = sum(totals)
+            
+        plt.bar(t,totals,width=1)
 
     plt.title("%4d-%2d"%(year,month))
     plt.xlabel("Day")
@@ -347,6 +399,7 @@ def generate_monthly_statistics(year,month,variable):
     daysinmonth = monthrange(year,month)[1]
     plt.xlim(1,daysinmonth)
     plt.ylim(Variable.minval,Variable.maxval)
+
     
     #save the plot to file
     fname = os.path.join(plotdir,"Monthly_%s_%04d-%02d.png"%(variable,year,month))
@@ -366,6 +419,8 @@ def generate_yearly_statistics(year,variable):
     Variable = db.Variable.get(name=variable)
     Year = _get_year(year)
     stats = db.Yearly_statistics.get(year=Year,variable=variable)
+
+    cumulative = Variable.cumulative
     
     #get the monthly statistics for each month in the year
     months = stats.months.order_by(lambda n: n.month.month)
@@ -377,41 +432,55 @@ def generate_yearly_statistics(year,variable):
     median = []
     std = []
     t = []
-    for month in months:
-        vals.append(month.mean)
-        t.append(month.month.month)
-        minval.append(month.minval)
-        maxval.append(month.maxval)
-        median.append(month.median)
-        std.append(month.stddev)
+    totals = []
+    if not cumulative:
+        for month in months:
+            vals.append(month.mean)
+            t.append(month.month.month)
+            minval.append(month.minval)
+            maxval.append(month.maxval)
+            median.append(month.median)
+            std.append(month.stddev)
 
 
-    vals=np.asarray(vals)
-    minval = np.asarray(minval)
-    maxval = np.asarray(maxval)
-    median = np.asarray(median)
-    std = np.asarray(std)
-    
-    #calculate the statistics for the year
-    stats.mean = np.mean(vals)
-    stats.median = np.median(vals)
-    stats.minval = np.min(minval)
-    stats.maxval = np.max(maxval)
-    stats.stddev = np.std(vals)
+        vals=np.asarray(vals)
+        minval = np.asarray(minval)
+        maxval = np.asarray(maxval)
+        median = np.asarray(median)
+        std = np.asarray(std)
+        
+        #calculate the statistics for the year
+        stats.mean = np.mean(vals)
+        stats.median = np.median(vals)
+        stats.minval = np.min(minval)
+        stats.maxval = np.max(maxval)
+        stats.stddev = np.std(vals)
 
-    #plot he yearly statistics
-    plt.plot(t,vals,color="black")
-    plt.plot(t,median,linestyle="--",color="black")
-    plt.fill_between(t,minval,vals,color="blue",alpha=0.25)
-    plt.fill_between(t,vals,maxval,color="red",alpha=0.25)
-    plt.fill_between(t,vals-std,vals,color="blue",alpha=0.5)
-    plt.fill_between(t,vals,vals+std,color="red",alpha=0.5)
+        #plot he yearly statistics
+        plt.plot(t,vals,color="black")
+        plt.plot(t,median,linestyle="--",color="black")
+        plt.fill_between(t,minval,vals,color="blue",alpha=0.25)
+        plt.fill_between(t,vals,maxval,color="red",alpha=0.25)
+        plt.fill_between(t,vals-std,vals,color="blue",alpha=0.5)
+        plt.fill_between(t,vals,vals+std,color="red",alpha=0.5)
+    else:
+        for month in months:
+            t.append(month.month.month+0.5)
+            totals.append(month.total)
+
+        stats.total = sum(totals)
+
+        plt.bar(t,totals,width=1)
    
     plt.title("%4d"%year)
     plt.xlabel("Month")
     plt.ylabel("%s (%s)"%(Variable.name,Variable.unit))
     plt.xlim(1,12)
-    plt.ylim(Variable.minval,Variable.maxval)
+    if Variable.minval is not None:
+        plt.ylim(bottom=Variable.minval)
+    if Variable.maxval is not None:
+        plt.ylim(top=Variable.maxval)
+    
     
     #save the plot to file
     fname = os.path.join(plotdir,"Yearly_%s_%04d.png"%(variable,year))
