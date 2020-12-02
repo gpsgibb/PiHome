@@ -3,8 +3,8 @@
 ##############################################################################
 
 [Unit]
-Description=gunicorn daemon
-After=network.target
+Description=PowerPi daemon
+#After=network.target
 
 [Service]
 Type=simple
@@ -14,9 +14,9 @@ Group=pi
 # another option for an even more restricted service is
 # DynamicUser=yes
 # see http://0pointer.net/blog/dynamic-users-with-systemd.html
-RuntimeDirectory=gunicorn
+RuntimeDirectory=powerpi
 WorkingDirectory=/home/pi/PiHome
-ExecStart=/home/pi/.local/bin/gunicorn www.website:app
+ExecStart=/usr/bin/python power_monitor.py
 ExecReload=/bin/kill -s HUP $MAINPID
 KillMode=mixed
 TimeoutStopSec=5
